@@ -1,3 +1,13 @@
+# Anti-Mac files and for LaTeX
+*.DS_STORE
+*.gz
+*.aux
+*.log
+*.toc
+*.xml
+*.blg
+*.icloud
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
