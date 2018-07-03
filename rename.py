@@ -26,7 +26,7 @@ def OutputName(int_file_number,str_output_path):
         return str_output_path+'/0'+str(int_file_number)+'.png'
 
 # Input and Output Directories
-Input_Directory = "rho_pics"
+Input_Directory = "YTAnalysis/rho"
 Output_Path = 'Output'
 
 # Make an Output_Path
@@ -74,7 +74,7 @@ while while_counter<Total_Files:
 
 # Create the movie
 os.chdir(Output_Path)
-os.system('ffmpeg -framerate 24 -i %06d.png -c:v libx264 -r 30 -pix_fmt yuv420p movie.mp4')
+os.system('ffmpeg -framerate 12 -i %06d.png -c:v libx264 -r 30 -pix_fmt yuv420p movie.mp4')
 os.chdir('..')
-shutil.copyfile(Output_Path+'/movie.mp4',os.getcwd()+'/movie.mp4')
+shutil.copyfile(Output_Path+'/movie.mp4',os.getcwd()+'/rho.mp4')
 shutil.rmtree(Output_Path)
