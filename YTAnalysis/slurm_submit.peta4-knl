@@ -37,7 +37,7 @@ source /home/dc-cook2/rds/rds-dirac-dp002/dc-cook2/python_env/bin/activate
 
 export CH_TIMERS=TRUE
 
-#! Full path to application executable: 
+#! Full path to application executable:
 application="L2MH_James.py"
 
 #! Run options for the application:
@@ -68,7 +68,7 @@ export I_MPI_PIN_ORDER=scatter # Adjacent domains have minimal sharing of caches
 #! Uncomment one choice for CMD below (add mpirun/mpiexec options if necessary):
 
 #! Choose this for a MPI code (possibly using OpenMP) using Intel MPI.
-CMD="python L2MH_James.py"
+CMD="mpirun -np 8 python L2MH_James.py"
 
 #! Choose this for a pure shared-memory OpenMP parallel program on a single node:
 #! (OMP_NUM_THREADS threads will be created):
@@ -104,4 +104,4 @@ echo -e "\nnumtasks=$numtasks, numnodes=$numnodes, mpi_tasks_per_node=$mpi_tasks
 
 echo -e "\nExecuting command:\n==================\n$CMD\n"
 
-eval $CMD 
+eval $CMD
