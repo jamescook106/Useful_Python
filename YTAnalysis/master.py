@@ -61,6 +61,7 @@ star_mass_center_y=[]
 star_mass_center_average=[]
 star_size_x_precise = []
 star_size_y_precise = []
+star_mass_ellipse = []
 
 # Other factors
 total_box_size = float(ds[0].domain_right_edge[0])
@@ -182,12 +183,25 @@ for i in ds:
         size_y_precise = (y_2_precise-y_1_precise)/2.
         star_size_y_precise.append(size_y_precise)
 
+        if size_x_precise<1:
+            size_x_precise=1
+
+        if size_y_precise<1:
+            size_y_precise=1
+
         sp = i.sphere([float(x_max_val_precise), float(y_max_val_precise), center], size_x_precise)
         RhoJamTotalx = float(sp.mean("RhoJam", weight="cell_volume"))*(4./3.)*np.pi*np.power((size_x_precise),3)
         star_mass_center_x.append(RhoJamTotalx)
         sp2 = i.sphere([float(x_max_val_precise), float(y_max_val_precise), center], size_y_precise)
         RhoJamTotaly = float(sp2.mean("RhoJam", weight="cell_volume"))*(4./3.)*np.pi*np.power((size_y_precise),3)
         star_mass_center_y.append(RhoJamTotaly)
+
+        spp = i.sphere([float(x_max_val_precise), float(y_max_val_precise), center], max(size_x_precise,size_y_precise))
+        Rho5 = 0.05 * float(spp["RhoJam"].max())
+        cr = spp.cut_region("obj['RhoJam'] > " + str(Rho5))
+        total_vol = cr.sum("cell_volume")
+        mass_precise = float(cr.mean("RhoJam", weight="cell_volume"))*total_vol
+        star_mass_ellipse.append(mass_precise)
 
         if yt.is_root():
             plt.figure(figsize=(20,20))
@@ -206,6 +220,7 @@ for i in ds:
         star_size_y_precise.append(0.)
         star_mass_center_x.append(0.0)
         star_mass_center_y.append(0.0)
+        star_mass_ellipse.append(0.0)
 
     if yt.is_root():
         np.savetxt('star_size_x_precise.out',star_size_x_precise)
@@ -282,12 +297,14 @@ if yt.is_root():
 
     # Total Mass
     plt.figure(7)
-    plt.plot(time_data,Mass_Total_data)
-    plt.plot(time_data,star_mass_center_y)
-    plt.plot(time_data,star_mass_center_x)
+    plt.plot(time_data,Mass_Total_data, label='Total Mass')
+    plt.plot(time_data,star_mass_center_y, label='Y Mass')
+    plt.plot(time_data,star_mass_center_x, label='X Mass')
+    plt.plot(time_data,star_mass_ellipse, label='Ellipsiodal size')
     plt.title('$M$ vs time')
     plt.ylabel('$M \\, [M_{pl}^2/m]$')
     plt.xlabel('Time $[1/m]$')
+    plt.legend()
     plt.savefig('Mass_Total.png')
     plt.close()
 
