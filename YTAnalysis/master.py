@@ -43,8 +43,8 @@ def _RhoJam(field, data):
         return data["rho"]/(data["chi"] * np.sqrt(data["chi"]))
 
 # mkdir the plot directories
-if not os.path.exists('rho_size'):
-    os.mkdir('rho_size')
+#if not os.path.exists('rho_size'):
+#    os.mkdir('rho_size')
 
 # Arrays for output data
 time_data = []
@@ -198,7 +198,7 @@ for i in ds:
             plt.legend(loc = "upper right")
             plt.xlabel(r'$x~[1/m]$')
             plt.ylabel(r'$\rho~[M_{pl}^2 m^2]$')
-            plt.savefig(("rho_size/rho%05d.png" % counter),bbox_inches = 'tight')
+            plt.savefig(("rho%05d.png" % counter),bbox_inches = 'tight')
             plt.close()
 
     else:
