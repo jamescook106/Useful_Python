@@ -1,14 +1,14 @@
 #!/bin/bash
 
 #! Name of the job:
-#SBATCH -J pi014_A_KNL
+#SBATCH -J pi12_008_A
 #SBATCH -A DIRAC-DP002-KNL
 #SBATCH --nodes=1
 #SBATCH --constraint=cache
 #! How many (MPI) tasks will there be in total? (<=nodes*256)
 #SBATCH --ntasks=8
 #! How much wallclock time will be required?
-#SBATCH --time=02:00:00
+#SBATCH --time=12:00:00
 #! What types of email messages do you wish to receive?
 #SBATCH --mail-type=FAIL
 #! Uncomment this to prevent the job from being requeued (e.g. if
@@ -38,7 +38,7 @@ source /home/dc-cook2/rds/rds-dirac-dp002/dc-cook2/python_env/bin/activate
 export CH_TIMERS=TRUE
 
 #! Full path to application executable:
-application="L2MH_James.py"
+application="master.py"
 
 #! Run options for the application:
 options="params.txt"
@@ -68,7 +68,7 @@ export I_MPI_PIN_ORDER=scatter # Adjacent domains have minimal sharing of caches
 #! Uncomment one choice for CMD below (add mpirun/mpiexec options if necessary):
 
 #! Choose this for a MPI code (possibly using OpenMP) using Intel MPI.
-CMD="mpirun -np 8 python L2MH_James.py"
+CMD="mpirun -np 8 python master.py"
 
 #! Choose this for a pure shared-memory OpenMP parallel program on a single node:
 #! (OMP_NUM_THREADS threads will be created):
