@@ -181,23 +181,16 @@ for i in ds:
         size_y_precise = (y_2_precise-y_1_precise)/2.
         star_size_y_precise.append(size_y_precise)
 
-        # 'Double max value' avoidance
-        if size_x_precise<1:
-            size_x_precise=1
-
-        if size_y_precise<1:
-            size_y_precise=1
-
         # Spherical Mass Estimates
-        sp = i.sphere([float(x_max_val_precise), float(y_max_val_precise), center], size_x_precise)
+        sp = i.sphere([float(x_max_val_precise), float(y_max_val_precise), center], max(size_x_precise,1.0))
         RhoJamTotalx = float(sp.mean("RhoJam", weight="cell_volume"))*(4./3.)*np.pi*np.power((size_x_precise),3)
         star_mass_center_x.append(RhoJamTotalx)
-        sp2 = i.sphere([float(x_max_val_precise), float(y_max_val_precise), center], size_y_precise)
+        sp2 = i.sphere([float(x_max_val_precise), float(y_max_val_precise), center], max(size_y_precise,1.0))
         RhoJamTotaly = float(sp2.mean("RhoJam", weight="cell_volume"))*(4./3.)*np.pi*np.power((size_y_precise),3)
         star_mass_center_y.append(RhoJamTotaly)
 
         # Elipsoidal Mass
-        spp = i.sphere([float(x_max_val_precise), float(y_max_val_precise), center], max(size_x_precise,size_y_precise))
+        spp = i.sphere([float(x_max_val_precise), float(y_max_val_precise), center], max(size_x_precise,size_y_precise,1.0))
         Rho5 = 0.05 * float(spp["RhoJam"].max())
         cr = spp.cut_region("obj['RhoJam'] > " + str(Rho5))
         total_vol = cr.sum("cell_volume")
