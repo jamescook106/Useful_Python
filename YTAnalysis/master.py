@@ -1,8 +1,8 @@
 # master.py
 # James Widdicombe
-# Last Updated 25/07/2018
+# Last Updated 01/08/2018
 # A master analysis script that include L2M, L2H and mass measurments
-# for GRChombo HDF5 files
+# for GRChombo HDF5 files, specifically for stars with density rho
 
 # Load the modules
 import yt
@@ -42,10 +42,6 @@ def _M2(field, data):
 def _RhoJam(field, data):
         return data["rho"]/(data["chi"] * np.sqrt(data["chi"]))
 
-# mkdir the plot directories
-#if not os.path.exists('rho_size'):
-#    os.mkdir('rho_size')
-
 # Arrays for output data
 time_data = []
 L2H_data = []
@@ -56,11 +52,12 @@ star_size_initial_x_data=[]
 SizeyData = []
 max_rho_pos_x_data = []
 max_rho_pos_y_data = []
-star_mass_center_x=[]
-star_mass_center_y=[]
-star_mass_center_average=[]
+star_mass_center_x = []
+star_mass_center_y = []
+star_mass_center_average = []
 star_size_x_precise = []
 star_size_y_precise = []
+star_size_z_precise = []
 star_mass_ellipse = []
 
 # Other factors
@@ -71,8 +68,8 @@ Quality = 'cubic'
 # Plot Start Time
 plot_start_time = time.time()
 program_runtime_data = []
-program_frames=[]
-counter=0
+program_frames = []
+counter = 0
 
 for i in ds:
 
@@ -90,9 +87,6 @@ for i in ds:
 
     # Add the RhoJam Field to the data
     i.add_field("RhoJam",_RhoJam, units = "")
-
-    # Exclude the edges of the simulation
-    #ad = i.r[8:504,8:504,8:504]
 
     # All Data
     ad = i.all_data()
@@ -158,7 +152,10 @@ for i in ds:
     if yt.is_root():
         np.savetxt('star_size_inimax_rho_postial_x.out',star_size_initial_x_data)
 
+    # If the stars have merged, we can look at the mass of the star
     if x_max_val>center-3.5 and x_max_val<center+3.5:
+
+        # Measure in x plane
         c_precise = i.ray((0,center,center),(total_box_size,center,center))
         x_precise = c_precise["x"]
         rho_precise = c_precise["rho"]
@@ -171,6 +168,7 @@ for i in ds:
         size_x_precise = (x_2_precise-x_1_precise)/2.
         star_size_x_precise.append(size_x_precise)
 
+        # Measure in y plane
         cy_precise = i.ray((x_max_val_precise,0,center),(x_max_val_precise,total_box_size,center))
         y_precise = cy_precise["y"]
         rhoy_precise = cy_precise["rho"]
@@ -183,12 +181,14 @@ for i in ds:
         size_y_precise = (y_2_precise-y_1_precise)/2.
         star_size_y_precise.append(size_y_precise)
 
+        # 'Double max value' avoidance
         if size_x_precise<1:
             size_x_precise=1
 
         if size_y_precise<1:
             size_y_precise=1
 
+        # Spherical Mass Estimates
         sp = i.sphere([float(x_max_val_precise), float(y_max_val_precise), center], size_x_precise)
         RhoJamTotalx = float(sp.mean("RhoJam", weight="cell_volume"))*(4./3.)*np.pi*np.power((size_x_precise),3)
         star_mass_center_x.append(RhoJamTotalx)
@@ -196,6 +196,7 @@ for i in ds:
         RhoJamTotaly = float(sp2.mean("RhoJam", weight="cell_volume"))*(4./3.)*np.pi*np.power((size_y_precise),3)
         star_mass_center_y.append(RhoJamTotaly)
 
+        # Elipsoidal Mass
         spp = i.sphere([float(x_max_val_precise), float(y_max_val_precise), center], max(size_x_precise,size_y_precise))
         Rho5 = 0.05 * float(spp["RhoJam"].max())
         cr = spp.cut_region("obj['RhoJam'] > " + str(Rho5))
@@ -203,30 +204,33 @@ for i in ds:
         mass_precise = float(cr.mean("RhoJam", weight="cell_volume"))*total_vol
         star_mass_ellipse.append(mass_precise)
 
+        # Plot Star Shape
         if yt.is_root():
             plt.figure(figsize=(20,20))
             plt.scatter(x_precise,rho_precise, alpha = alp,label = "t ="+str(i.current_time))
             plt.scatter(y_precise,rhoy_precise, alpha = alp,label = "t ="+str(i.current_time))
             plt.xlim([x_1-10,x_2+10])
-            #plt.ylim([-0.0005,0.008])
             plt.legend(loc = "upper right")
             plt.xlabel(r'$x~[1/m]$')
             plt.ylabel(r'$\rho~[M_{pl}^2 m^2]$')
             plt.savefig(("rho%05d.png" % counter),bbox_inches = 'tight')
             plt.close()
 
+    # Append zeros if there is no central star
     else:
-        star_size_x_precise.append(0.)
-        star_size_y_precise.append(0.)
+        star_size_x_precise.append(0.0)
+        star_size_y_precise.append(0.0)
         star_mass_center_x.append(0.0)
         star_mass_center_y.append(0.0)
         star_mass_ellipse.append(0.0)
 
+    # Save data
     if yt.is_root():
         np.savetxt('star_size_x_precise.out',star_size_x_precise)
         np.savetxt('star_size_y_precise.out',star_size_y_precise)
         np.savetxt('star_mass_center_x.out',star_mass_center_x)
         np.savetxt('star_mass_center_y.out',star_mass_center_y)
+        np.savetxt('star_mass_ellipse.out',star_mass_ellipse)
 
 if yt.is_root():
     # Plots
@@ -246,7 +250,7 @@ if yt.is_root():
     # L2H
     plt.figure(2)
     plt.plot(time_data,L2H_data)
-    plt.title('$\\mathcal{H}$ vs time')
+    #plt.title('$\\mathcal{H}$ vs time')
     plt.ylabel('$\\mathcal{H}$')
     plt.xlabel('Time $[1/m]$')
     plt.savefig('H.png')
@@ -255,7 +259,7 @@ if yt.is_root():
     # L2M
     plt.figure(3)
     plt.plot(time_data,L2M_data)
-    plt.title('$\\mathcal{M}$ vs time')
+    #plt.title('$\\mathcal{M}$ vs time')
     plt.ylabel('$\\mathcal{M}$')
     plt.xlabel('Time $[1/m]$')
     plt.savefig('M.png')
@@ -270,12 +274,10 @@ if yt.is_root():
     plt.savefig('RhoJam_Average.png')
     plt.close()
 
-
     # Star Size
     plt.figure(5)
     plt.plot(time_data,star_size_x_precise, label='x size')
     plt.plot(time_data,star_size_y_precise, label = 'y size')
-    #plt.plot(time_data,star_size_initial_x_data)
     plt.title('$r$ vs time')
     plt.ylabel('$r \\, [1/m]$')
     plt.xlabel('Time $[1/m]$')
@@ -295,13 +297,24 @@ if yt.is_root():
     plt.savefig('Star_Size_Diagnostic.png')
     plt.close()
 
-    # Total Mass
+    # Total Mass Diagnostic
     plt.figure(7)
     plt.plot(time_data,Mass_Total_data, label='Total Mass')
     plt.plot(time_data,star_mass_center_y, label='Y Mass')
     plt.plot(time_data,star_mass_center_x, label='X Mass')
-    plt.plot(time_data,star_mass_ellipse, label='Ellipsiodal size')
+    plt.plot(time_data,star_mass_ellipse, label='Ellipsiodal Mass')
     plt.title('$M$ vs time')
+    plt.ylabel('$M \\, [M_{pl}^2/m]$')
+    plt.xlabel('Time $[1/m]$')
+    plt.legend()
+    plt.savefig('Mass_Total_Diag.png')
+    plt.close()
+
+    # Total Mass
+    plt.figure(8)
+    plt.plot(time_data,Mass_Total_data, label='Total Mass')
+    plt.plot(time_data,star_mass_ellipse, label='Star Mass')
+    #plt.title('$M$ vs time')
     plt.ylabel('$M \\, [M_{pl}^2/m]$')
     plt.xlabel('Time $[1/m]$')
     plt.legend()
@@ -309,7 +322,7 @@ if yt.is_root():
     plt.close()
 
     # Max rho pos
-    plt.figure(8)
+    plt.figure(9)
     plt.plot(time_data,max_rho_pos_x_data)
     plt.title('$x,y$ vs time')
     plt.xlabel('Time $[1/m]$')
