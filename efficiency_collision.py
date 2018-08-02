@@ -71,6 +71,10 @@ for i in range(0,len(time_data)):
             collision_recorder=1
         if time_data[i]-collision_time>100 and time_data[i]-collision_time<box_size:
             post_collision_star_mass.append(star_mass_data[i])
+    if len(collided_time)>0:
+        if star_mass_data[i]==0:
+            collided_time.append(time_data[i])
+            collided_mass.append(star_mass_data[i])
 
 # Calculate Efficiency
 star_mass_mean = np.mean(post_collision_star_mass)
