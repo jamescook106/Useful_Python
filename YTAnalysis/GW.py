@@ -110,7 +110,7 @@ sY_l4_m3n = 3.*np.sqrt(7./(2.*np.pi))*np.exp(-3*1j*phi)*(1+2*np.cos(theta))*np.s
 sY_l4_m4n = 3./4.*np.exp(-4*1j*phi)*np.sqrt(7/np.pi)*np.sin(theta/2)**4*np.sin(theta)**2
 
 # ==============================
-#         Loop over all frames
+#		  Loop over all frames
 # ==============================
 
 for i in ds:
@@ -153,46 +153,46 @@ for i in ds:
 	Weyl4_l4_m4n = 0 + 1j*0
 
 	for (k,x) in enumerate(phi):
-            phi_var = phi[k]
-            theta_var = theta[k]
-            x1 = extraction_radius*np.cos(phi_var)*np.sin(theta_var)+float(center[0])
-            y1 = extraction_radius*np.sin(phi_var)*np.sin(theta_var)+float(center[1])
-            z1 = extraction_radius*np.cos(theta_var)+float(center[2])
-            c = [x1,y1,z1]
-            ptn = i.point(c)
-            ReWeyl = float(ptn["ReWeyl4"][0])
-            ImWeyl = float(ptn["ImWeyl4"][0])
-        Weyl4 = ReWeyl + 1j*ImWeyl
+			phi_var = phi[k]
+			theta_var = theta[k]
+			x1 = extraction_radius*np.cos(phi_var)*np.sin(theta_var)+float(center[0])
+			y1 = extraction_radius*np.sin(phi_var)*np.sin(theta_var)+float(center[1])
+			z1 = extraction_radius*np.cos(theta_var)+float(center[2])
+			c = [x1,y1,z1]
+			ptn = i.point(c)
+			ReWeyl = float(ptn["ReWeyl4"][0])
+			ImWeyl = float(ptn["ImWeyl4"][0])
+		Weyl4 = ReWeyl + 1j*ImWeyl
 
-        Weyl4_l2_m0 += 4*pi*w[k]*np.conjugate(sY_l2_m0[k])*Weyl4*extraction_radius
-        # positive m
-        Weyl4_l2_m1 += 4*pi*w[k]*np.conjugate(sY_l2_m1[k])*Weyl4*extraction_radius
-        Weyl4_l2_m2 += 4*pi*w[k]*np.conjugate(sY_l2_m2[k])*Weyl4*extraction_radius
-        # negative m
-        Weyl4_l2_m1n += 4*pi*w[k]*np.conjugate(sY_l2_m1n[k])*Weyl4*extraction_radius
-        Weyl4_l2_m2n += 4*pi*w[k]*np.conjugate(sY_l2_m2n[k])*Weyl4*extraction_radius
-        # l = 3
-        Weyl4_l3_m0 += 4*pi*w[k]*np.conjugate(sY_l3_m0[k])*Weyl4*extraction_radius
-        # positive m
-        Weyl4_l3_m1 += 4*pi*w[k]*np.conjugate(sY_l3_m1[k])*Weyl4*extraction_radius
-        Weyl4_l3_m2 += 4*pi*w[k]*np.conjugate(sY_l3_m2[k])*Weyl4*extraction_radius
-        Weyl4_l3_m3 += 4*pi*w[k]*np.conjugate(sY_l3_m3[k])*Weyl4*extraction_radius
-        # negative m
-        Weyl4_l3_m1n += 4*pi*w[k]*np.conjugate(sY_l3_m1n[k])*Weyl4*extraction_radius
-        Weyl4_l3_m2n += 4*pi*w[k]*np.conjugate(sY_l3_m2n[k])*Weyl4*extraction_radius
-        Weyl4_l3_m3n += 4*pi*w[k]*np.conjugate(sY_l3_m3n[k])*Weyl4*extraction_radius
-        # l = 4
-        Weyl4_l4_m0 += 4*pi*w[k]*np.conjugate(sY_l4_m0[k])*Weyl4*extraction_radius
-        # positive m
-        Weyl4_l4_m1 += 4*pi*w[k]*np.conjugate(sY_l4_m1[k])*Weyl4*extraction_radius
-        Weyl4_l4_m2 += 4*pi*w[k]*np.conjugate(sY_l4_m2[k])*Weyl4*extraction_radius
-        Weyl4_l4_m3 += 4*pi*w[k]*np.conjugate(sY_l4_m3[k])*Weyl4*extraction_radius
-        Weyl4_l4_m4 += 4*pi*w[k]*np.conjugate(sY_l4_m4[k])*Weyl4*extraction_radius
-        # negative m
-        Weyl4_l4_m1n += 4*pi*w[k]*np.conjugate(sY_l4_m1n[k])*Weyl4*extraction_radius
-        Weyl4_l4_m2n += 4*pi*w[k]*np.conjugate(sY_l4_m2n[k])*Weyl4*extraction_radius
-        Weyl4_l4_m3n += 4*pi*w[k]*np.conjugate(sY_l4_m3n[k])*Weyl4*extraction_radius
-        Weyl4_l4_m4n += 4*pi*w[k]*np.conjugate(sY_l4_m4n[k])*Weyl4*extraction_radius
+		Weyl4_l2_m0 += 4*pi*w[k]*np.conjugate(sY_l2_m0[k])*Weyl4*extraction_radius
+		# positive m
+		Weyl4_l2_m1 += 4*pi*w[k]*np.conjugate(sY_l2_m1[k])*Weyl4*extraction_radius
+		Weyl4_l2_m2 += 4*pi*w[k]*np.conjugate(sY_l2_m2[k])*Weyl4*extraction_radius
+		# negative m
+		Weyl4_l2_m1n += 4*pi*w[k]*np.conjugate(sY_l2_m1n[k])*Weyl4*extraction_radius
+		Weyl4_l2_m2n += 4*pi*w[k]*np.conjugate(sY_l2_m2n[k])*Weyl4*extraction_radius
+		# l = 3
+		Weyl4_l3_m0 += 4*pi*w[k]*np.conjugate(sY_l3_m0[k])*Weyl4*extraction_radius
+		# positive m
+		Weyl4_l3_m1 += 4*pi*w[k]*np.conjugate(sY_l3_m1[k])*Weyl4*extraction_radius
+		Weyl4_l3_m2 += 4*pi*w[k]*np.conjugate(sY_l3_m2[k])*Weyl4*extraction_radius
+		Weyl4_l3_m3 += 4*pi*w[k]*np.conjugate(sY_l3_m3[k])*Weyl4*extraction_radius
+		# negative m
+		Weyl4_l3_m1n += 4*pi*w[k]*np.conjugate(sY_l3_m1n[k])*Weyl4*extraction_radius
+		Weyl4_l3_m2n += 4*pi*w[k]*np.conjugate(sY_l3_m2n[k])*Weyl4*extraction_radius
+		Weyl4_l3_m3n += 4*pi*w[k]*np.conjugate(sY_l3_m3n[k])*Weyl4*extraction_radius
+		# l = 4
+		Weyl4_l4_m0 += 4*pi*w[k]*np.conjugate(sY_l4_m0[k])*Weyl4*extraction_radius
+		# positive m
+		Weyl4_l4_m1 += 4*pi*w[k]*np.conjugate(sY_l4_m1[k])*Weyl4*extraction_radius
+		Weyl4_l4_m2 += 4*pi*w[k]*np.conjugate(sY_l4_m2[k])*Weyl4*extraction_radius
+		Weyl4_l4_m3 += 4*pi*w[k]*np.conjugate(sY_l4_m3[k])*Weyl4*extraction_radius
+		Weyl4_l4_m4 += 4*pi*w[k]*np.conjugate(sY_l4_m4[k])*Weyl4*extraction_radius
+		# negative m
+		Weyl4_l4_m1n += 4*pi*w[k]*np.conjugate(sY_l4_m1n[k])*Weyl4*extraction_radius
+		Weyl4_l4_m2n += 4*pi*w[k]*np.conjugate(sY_l4_m2n[k])*Weyl4*extraction_radius
+		Weyl4_l4_m3n += 4*pi*w[k]*np.conjugate(sY_l4_m3n[k])*Weyl4*extraction_radius
+		Weyl4_l4_m4n += 4*pi*w[k]*np.conjugate(sY_l4_m4n[k])*Weyl4*extraction_radius
 
 # ==================================================
 # DATA WRITEOUT
