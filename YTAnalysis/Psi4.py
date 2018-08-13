@@ -17,7 +17,7 @@ yt.enable_parallelism()
 
 # Script Parameters
 extraction_radius = 120 # radius of extraction
-data_location = '../outMatterSF_*.3d.hdf5' # Data file location
+data_location = '../../outMatterSF_*.3d.hdf5' # Data file location
 
 #Loading dataset
 ds = yt.load(data_location)
