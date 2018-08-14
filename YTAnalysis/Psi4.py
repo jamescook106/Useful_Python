@@ -1,8 +1,8 @@
 # Psi4.py
 # James Widdicombe
-# Modified from a code of Thomas Helfer
-# Last Updated 08/08/2018
-# Decomposition of Psi4 into spinweighted spherical harmonics
+# Modified from a code written by Thomas Helfer
+# Last Updated 14/08/2018
+# Decomposition of Psi4 into spin weighted spherical harmonics
 # l = 2,3,4
 
 # Import the modules
@@ -17,14 +17,12 @@ yt.enable_parallelism()
 
 # Script Parameters
 extraction_radius = 120 # radius of extraction
-data_location = '../../outMatterSF_*.3d.hdf5' # Data file location
+data_location = '../outMatterSF_*.3d.hdf5' # Data file location
 
 #Loading dataset
 ds = yt.load(data_location)
 
-# =================
-# Init Outputarrays
-# =================
+# Initialize Output arrays
 # l = 2
 Weyl4_l2_m0_data  = []
 # positive m
@@ -56,17 +54,21 @@ Weyl4_l4_m2n_data = []
 Weyl4_l4_m3n_data = []
 Weyl4_l4_m4n_data = []
 
-Sr_data = []
-trianglearea = []
-timedata = []
-Cycletimedata = []
+# Program Parameters 
+center =  (ds[0].domain_right_edge/2.)
 
-# Definitions for Quadrature sceme
+# Initialize Arrays
+timedata = []
+program_runtime_data = []
+
+# Definitions for Quadrature scheme
 N = 131
 
 coord = np.loadtxt('PointDistFiles/lebedev/lebedev_%03d.txt'% N)
 theta = coord[:,1]*pi/180; phi = coord[:,0]*pi/180 + pi
 w = coord[:,2]
+
+phi_length = len(phi)
 
 # Spinweighted spherical harmonics s = -2
 # =========================================
@@ -113,13 +115,10 @@ sY_l4_m4n = 3./4.*np.exp(-4*1j*phi)*np.sqrt(7/np.pi)*np.sin(theta/2)**4*np.sin(t
 # ==============================
 for i in ds:
 
-	startCycle = time.time()
+	#Timings
+	i_start = time.time()
 
-	center =  (i.domain_right_edge/2)
-
-# ==================================================
 	# Initalising
-
 	Sr = 0 + 1j*0
 	# l = 2
 	Weyl4_l2_m0 = 0 + 1j*0
@@ -155,9 +154,8 @@ for i in ds:
 	Weyl4_l4_m3n = 0 + 1j*0
 	Weyl4_l4_m4n = 0 + 1j*0
 
-	start = time.time()
-
-	for (k,x) in enumerate(phi):
+	 # k is a counter
+	for k in range(phi_length):
 
 		phi_var = phi[k]
 		theta_var = theta[k]
@@ -169,7 +167,6 @@ for i in ds:
 		ReWeyl = float(ptn["ReWeyl4"][0])
 		ImWeyl = float(ptn["ImWeyl4"][0])
 		Weyl4 = ReWeyl + 1j*ImWeyl
-
 
 		Weyl4_l2_m0 += 4*pi*w[k]*np.conjugate(sY_l2_m0[k])*Weyl4*extraction_radius
 		# positive m
@@ -201,10 +198,7 @@ for i in ds:
 		Weyl4_l4_m3n += 4*pi*w[k]*np.conjugate(sY_l4_m3n[k])*Weyl4*extraction_radius
 		Weyl4_l4_m4n += 4*pi*w[k]*np.conjugate(sY_l4_m4n[k])*Weyl4*extraction_radius
 
-# ==================================================
-# DATA WRITEOUT
-# ==================================================
-
+	# Data Writeout
 	# l = 2
 	Weyl4_l2_m0_data.append(Weyl4_l2_m0)
 	# positive m
@@ -213,7 +207,6 @@ for i in ds:
 	# negative m
 	Weyl4_l2_m1n_data.append(Weyl4_l2_m1n)
 	Weyl4_l2_m2n_data.append(Weyl4_l2_m2n)
-
 
 	# l = 3
 	Weyl4_l3_m0_data.append(Weyl4_l3_m0)
@@ -267,3 +260,6 @@ for i in ds:
 	np.savetxt('Weyl4_l4_m2n_data.out',Weyl4_l4_m2n_data)
 	np.savetxt('Weyl4_l4_m3n_data.out',Weyl4_l4_m3n_data)
 	np.savetxt('Weyl4_l4_m4n_data.out',Weyl4_l4_m4n_data)
+
+	program_runtime_data.append(time.time()-i_start)
+	np.savetxt('run_time.out',program_runtime_data)
