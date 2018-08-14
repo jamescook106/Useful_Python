@@ -17,7 +17,7 @@ yt.enable_parallelism()
 
 # Script Parameters
 extraction_radius = 120 # radius of extraction
-data_location = '../outMatterSF_*.3d.hdf5' # Data file location
+data_location = '../../outMatterSF_*.3d.hdf5' # Data file location
 
 #Loading dataset
 ds = yt.load(data_location)
@@ -159,17 +159,16 @@ for i in ds:
 
 	for (k,x) in enumerate(phi):
 
-                phi_var = phi[k]
-                theta_var = theta[k]
-                x1 = extraction_radius*np.cos(phi_var)*np.sin(theta_var)+float(center[0])
-                y1 = extraction_radius*np.sin(phi_var)*np.sin(theta_var)+float(center[1])
-                z1 = extraction_radius*np.cos(theta_var)+float(center[2])
-
-                c = [x1,y1,z1]
-                ptn = i.point(c)
-                ReWeyl = float(ptn["ReWeyl4"][0])
-                ImWeyl = float(ptn["ImWeyl4"][0])
-	        Weyl4 = ReWeyl + 1j*ImWeyl
+		phi_var = phi[k]
+		theta_var = theta[k]
+		x1 = extraction_radius*np.cos(phi_var)*np.sin(theta_var)+float(center[0])
+		y1 = extraction_radius*np.sin(phi_var)*np.sin(theta_var)+float(center[1])
+		z1 = extraction_radius*np.cos(theta_var)+float(center[2])
+		c = [x1,y1,z1]
+		ptn = i.point(c)
+		ReWeyl = float(ptn["ReWeyl4"][0])
+		ImWeyl = float(ptn["ImWeyl4"][0])
+		Weyl4 = ReWeyl + 1j*ImWeyl
 
 
 		Weyl4_l2_m0 += 4*pi*w[k]*np.conjugate(sY_l2_m0[k])*Weyl4*extraction_radius
