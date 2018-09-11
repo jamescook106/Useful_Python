@@ -10,14 +10,22 @@ import numpy as np
 from numpy import pi
 from yt import derived_field
 import time
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+from matplotlib import rcParams
 
 start_time = time.time()
+
+# Matplotlib Settings
+rcParams.update({'figure.autolayout': True})
+rcParams['axes.formatter.limits'] = [-3,3]
 
 # Enable YT Parallelism
 yt.enable_parallelism()
 
 # Script Parameters
-extraction_radius = 120 # radius of extraction
+extraction_radius = 60 # radius of extraction
 data_location = '../outMatterSF_*.3d.hdf5' # Data file location
 
 #Loading dataset
@@ -244,6 +252,29 @@ if yt.is_root():
 		
 		loop_times.append(L[1][22])
 	
+	All_data = []
+	All_data.append(Weyl4_l2_m0_data)
+	All_data.append(Weyl4_l2_m1_data)
+	All_data.append(Weyl4_l2_m2_data)
+	All_data.append(Weyl4_l2_m1n_data)
+	All_data.append(Weyl4_l2_m2n_data)
+	All_data.append(Weyl4_l3_m0_data)
+	All_data.append(Weyl4_l3_m1_data)
+	All_data.append(Weyl4_l3_m2_data)
+	All_data.append(Weyl4_l3_m3_data)
+	All_data.append(Weyl4_l3_m1n_data)
+	All_data.append(Weyl4_l3_m2n_data)
+	All_data.append(Weyl4_l3_m3n_data)
+	All_data.append(Weyl4_l4_m0_data)
+	All_data.append(Weyl4_l4_m1_data)
+	All_data.append(Weyl4_l4_m2_data)
+	All_data.append(Weyl4_l4_m3_data)
+	All_data.append(Weyl4_l4_m4_data)
+	All_data.append(Weyl4_l4_m1n_data)
+	All_data.append(Weyl4_l4_m2n_data)
+	All_data.append(Weyl4_l4_m3n_data)
+	All_data.append(Weyl4_l4_m4n_data)
+	
 	# Output Data
 	np.savetxt('time.out',timedata)
 	np.savetxt('loop_times.out',loop_times)
@@ -269,3 +300,60 @@ if yt.is_root():
 	np.savetxt('Weyl4_l4_m2n_data.out',Weyl4_l4_m2n_data)
 	np.savetxt('Weyl4_l4_m3n_data.out',Weyl4_l4_m3n_data)
 	np.savetxt('Weyl4_l4_m4n_data.out',Weyl4_l4_m4n_data)
+	
+	# Integrated Plotting
+	
+	labels = [
+	'l=2m=0',
+	'l=2m=1',
+	'l=2m=2',
+	'l=2m=-1',
+	'l=2m=-2',
+	'l=3m=0',
+	'l=3m=1',
+	'l=3m=2',
+	'l=3m=3',
+	'l=3m=-1',
+	'l=3m=-2',
+	'l=3m=-3',
+	'l=4m=0',
+	'l=4m=1',
+	'l=4m=2',
+	'l=4m=3',
+	'l=4m=4',
+	'l=4m=-1',
+	'l=4m=-2',
+	'l=4m=-3',
+	'l=4m=-4'
+	]
+	
+	time_retarded = []
+	
+	for i in timedata:
+		time_retarded.append(float(i)-extraction_radius)
+		
+	np.savetxt('timeretarded.out', time_retarded)
+	
+	for i in range(0,len(labels)):
+		plt.figure(i)
+		plt.plot(time_retarded,np.real(All_data[i]))
+		plt.xlabel(r'$t_{ret}~[1/m_{a}]$')
+		plt.ylabel(r'$r\Psi_4$')
+		plt.grid()
+		plt.savefig(labels[i]+'.png',bbox_inches = 'tight')
+		plt.close()
+	
+	plt.figure(len(labels),figsize=(10, 6))
+	ax = plt.subplot(111)
+	for i in range(0,len(labels)):
+		ax.plot(time_retarded,np.real(All_data[i]),label=labels[i])
+	box = ax.get_position()
+	ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+	plt.xlabel(r'$t_{ret}~[1/m_{a}]$')
+	plt.ylabel(r'$r\Psi_4$')
+	plt.grid()
+	plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+	plt.savefig('All.png',bbox_inches = 'tight')
+	plt.close()
+	
+	
