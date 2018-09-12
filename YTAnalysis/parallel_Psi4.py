@@ -267,7 +267,6 @@ if yt.is_root():
 		Weyl4_all_time.append(L[1][23])
 
 	# Power calculation 
-
 	Int = np.zeros(len(coord),dtype = "complex128")
 	Spher_data = []
 	Energy_data = []
@@ -358,22 +357,23 @@ if yt.is_root():
 	'l=4m=-4'
 	]
 	
+	# Calculate Retarded Time 
 	time_retarded = []
-	
 	for i in timedata:
 		time_retarded.append(float(i)-extraction_radius)
-		
 	np.savetxt('timeretarded.out', time_retarded)
 	
+	# Individual Modes
 	for i in range(0,len(labels)):
 		plt.figure(i)
 		plt.plot(time_retarded,np.real(All_data[i]))
-		plt.xlabel(r'$t_{ret}~[1/m_{a}]$')
+		plt.xlabel(r'$t_{ret}~[1/m]$')
 		plt.ylabel(r'$r\Psi_4$')
 		plt.grid()
 		plt.savefig(labels[i]+'.png',bbox_inches = 'tight')
 		plt.close()
-	
+
+	# All Modes
 	plt.figure(len(labels),figsize=(10, 6))
 	ax = plt.subplot(111)
 	for i in range(0,len(labels)):
@@ -387,4 +387,20 @@ if yt.is_root():
 	plt.savefig('All.png',bbox_inches = 'tight')
 	plt.close()
 	
+	# Power
+	plt.figure(len(labels)+1,figsize=(10, 6))
+	plt.plot(time_retarded,np.real(Spher_data))
+	plt.xlabel(r'$t_{ret}~[1/m]$')
+	plt.ylabel(r'$P \, [M_{pl}^2]$')
+	plt.grid()
+	plt.savefig('power.png',bbox_inches = 'tight')
+	plt.close()
 	
+	# Energy
+	plt.figure(len(labels)+2,figsize=(10, 6))
+	plt.plot(time_retarded,np.real(Energy_data))
+	plt.xlabel(r'$t_{ret}~[1/m]$')
+	plt.ylabel(r'$E \, [M_{pl}^2/m]$')
+	plt.grid()
+	plt.savefig('energy.png',bbox_inches = 'tight')
+	plt.close()
