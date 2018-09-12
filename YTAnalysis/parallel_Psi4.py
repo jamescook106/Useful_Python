@@ -92,8 +92,6 @@ sY_l4_m2n = 3./(4.*np.sqrt(np.pi))*np.exp(-2*1j*phi)*(9+14*np.cos(theta)+7*np.co
 sY_l4_m3n = 3.*np.sqrt(7./(2.*np.pi))*np.exp(-3*1j*phi)*(1+2*np.cos(theta))*np.sin(theta/2)**5*np.cos(theta/2)
 sY_l4_m4n = 3./4.*np.exp(-4*1j*phi)*np.sqrt(7/np.pi)*np.sin(theta/2)**4*np.sin(theta)**2
 
-
-
 # Iterate through dataset
 for sto, i in ts.piter(storage=storage):
 #Timings
@@ -134,8 +132,8 @@ for sto, i in ts.piter(storage=storage):
 	Weyl4_l4_m2n = 0 + 1j*0
 	Weyl4_l4_m3n = 0 + 1j*0
 	Weyl4_l4_m4n = 0 + 1j*0
-	
-        Weyl4data = []
+
+	Weyl4data = []
 
 	 # k is a counter
 	for k in range(phi_length):
@@ -227,7 +225,7 @@ if yt.is_root():
 	# Diagnostics
 	loop_times = []
 
-	Weyl4_all_time  =  []
+	Weyl4_all_time = []
 	
 	# Swap from storage into arrays
 	for L in sorted(storage.items()):
@@ -276,11 +274,11 @@ if yt.is_root():
 	Energy = 0 
 	for i in range(len(Weyl4_all_time)):
 		Spher = 0 
-	        for k in range(phi_length):
+		for k in range(phi_length):
 			Int[k] += Weyl4_all_time[i][k]*DeltaT
-                        Spher += 4*pi*w[k]*np.absolute(Int[k])**2
-                Spher = Spher*(extraction_radius)**2/(16*np.pi)
-		Spher_data.append[Spher]
+			Spher += 4*pi*w[k]*np.absolute(Int[k])**2
+		Spher = Spher*(extraction_radius)**2/(16*np.pi)
+		Spher_data.append(Spher)
 		Energy += Spher*DeltaT
 		Energy_data.append(Energy)
 
