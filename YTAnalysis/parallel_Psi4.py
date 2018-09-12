@@ -92,6 +92,8 @@ sY_l4_m2n = 3./(4.*np.sqrt(np.pi))*np.exp(-2*1j*phi)*(9+14*np.cos(theta)+7*np.co
 sY_l4_m3n = 3.*np.sqrt(7./(2.*np.pi))*np.exp(-3*1j*phi)*(1+2*np.cos(theta))*np.sin(theta/2)**5*np.cos(theta/2)
 sY_l4_m4n = 3./4.*np.exp(-4*1j*phi)*np.sqrt(7/np.pi)*np.sin(theta/2)**4*np.sin(theta)**2
 
+
+
 # Iterate through dataset
 for sto, i in ts.piter(storage=storage):
 #Timings
@@ -133,8 +135,7 @@ for sto, i in ts.piter(storage=storage):
 	Weyl4_l4_m3n = 0 + 1j*0
 	Weyl4_l4_m4n = 0 + 1j*0
 	
-	Int = np.zeros(len(coord),dtype = "complex128")
-	Spher = 0 
+        Weyl4data = []
 
 	 # k is a counter
 	for k in range(phi_length):
@@ -150,9 +151,8 @@ for sto, i in ts.piter(storage=storage):
 		ImWeyl = float(ptn["ImWeyl4"][0])
 		Weyl4 = ReWeyl + 1j*ImWeyl
 		
-		Int[k] += Weyl4*DeltaT
-		Spher += 4*pi*w[k]*np.absolute(Int[k])**2
-
+		Weyl4data.append(Weyl4)
+		
 		Weyl4_l2_m0 += 4*pi*w[k]*np.conjugate(sY_l2_m0[k])*Weyl4*extraction_radius
 		# positive m
 		Weyl4_l2_m1 += 4*pi*w[k]*np.conjugate(sY_l2_m1[k])*Weyl4*extraction_radius
@@ -183,9 +183,8 @@ for sto, i in ts.piter(storage=storage):
 		Weyl4_l4_m3n += 4*pi*w[k]*np.conjugate(sY_l4_m3n[k])*Weyl4*extraction_radius
 		Weyl4_l4_m4n += 4*pi*w[k]*np.conjugate(sY_l4_m4n[k])*Weyl4*extraction_radius
 		
-	Spher = Spher*(extraction_radius)**2/(16*np.pi)
 	
-	array = [i.current_time,Weyl4_l2_m0,Weyl4_l2_m1,Weyl4_l2_m2,Weyl4_l2_m1n,Weyl4_l2_m2n,Weyl4_l3_m0,Weyl4_l3_m1,Weyl4_l3_m2,Weyl4_l3_m3,Weyl4_l3_m1n,Weyl4_l3_m2n,Weyl4_l3_m3n,Weyl4_l4_m0,Weyl4_l4_m1,Weyl4_l4_m2,Weyl4_l4_m3,Weyl4_l4_m4,Weyl4_l4_m1n,Weyl4_l4_m2n,Weyl4_l4_m3n,Weyl4_l4_m4n,time.time()-L_start, Spher]
+	array = [i.current_time,Weyl4_l2_m0,Weyl4_l2_m1,Weyl4_l2_m2,Weyl4_l2_m1n,Weyl4_l2_m2n,Weyl4_l3_m0,Weyl4_l3_m1,Weyl4_l3_m2,Weyl4_l3_m3,Weyl4_l3_m1n,Weyl4_l3_m2n,Weyl4_l3_m3n,Weyl4_l4_m0,Weyl4_l4_m1,Weyl4_l4_m2,Weyl4_l4_m3,Weyl4_l4_m4,Weyl4_l4_m1n,Weyl4_l4_m2n,Weyl4_l4_m3n,Weyl4_l4_m4n,time.time()-L_start, Weyl4data]
 	sto.result = array
 	sto.result_id = str(i)
 	
@@ -223,14 +222,12 @@ if yt.is_root():
 	Weyl4_l4_m3n_data = []
 	Weyl4_l4_m4n_data = []
 	
-	#Power Out
-	Spherdata =[]
-	
-	# Time Data
 	timedata = []
 	
 	# Diagnostics
 	loop_times = []
+
+	Weyl4_all_time  =  []
 	
 	# Swap from storage into arrays
 	for L in sorted(storage.items()):
@@ -267,9 +264,26 @@ if yt.is_root():
 		Weyl4_l4_m4n_data.append(L[1][21])
 		
 		loop_times.append(L[1][22])
-		
-		Spherdata.append(L[1][23])
-	
+
+		# Contains all values of Weyl4 for the hole time evolution 
+		Weyl4_all_time.append(L[1][23])
+
+	# Power calculation 
+
+	Int = np.zeros(len(coord),dtype = "complex128")
+	Spher_data = []
+	Energy_data = []
+	Energy = 0 
+	for i in range(len(Weyl4_all_time)):
+		Spher = 0 
+	        for k in range(phi_length):
+			Int[k] += Weyl4_all_time[i][k]*DeltaT
+                        Spher += 4*pi*w[k]*np.absolute(Int[k])**2
+                Spher = Spher*(extraction_radius)**2/(16*np.pi)
+		Spher_data.append[Spher]
+		Energy += Spher*DeltaT
+		Energy_data.append(Energy)
+
 	All_data = []
 	All_data.append(Weyl4_l2_m0_data)
 	All_data.append(Weyl4_l2_m1_data)
@@ -318,7 +332,8 @@ if yt.is_root():
 	np.savetxt('Weyl4_l4_m2n_data.out',Weyl4_l4_m2n_data)
 	np.savetxt('Weyl4_l4_m3n_data.out',Weyl4_l4_m3n_data)
 	np.savetxt('Weyl4_l4_m4n_data.out',Weyl4_l4_m4n_data)
-	np.savetxt('Spher.out',Spherdata)
+	np.savetxt('Spher_data.out',Spher_data)
+	np.savetxt('Energy_data.out',Energy_data)
 	
 	# Integrated Plotting
 	labels = [
