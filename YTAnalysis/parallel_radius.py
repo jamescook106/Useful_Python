@@ -65,7 +65,7 @@ for sto, i in ts.piter(storage=storage):
 
 	# Find the coordinate of where the maximum value is
 	x_max_partial = np.where(rho == rho_max)
-	if x_max_partial!=0:
+	if x_max_partial[0].size!=0:
 		x_max = np.where(rho == rho_max)[0][0]
 		x_max_val = x[x_max]
 	
@@ -80,7 +80,7 @@ for sto, i in ts.piter(storage=storage):
 		# Size of the 95% rho in center
 		size_x = (x_2-x_1)/2.
 	else:
-		x_max_val = center-50
+		x_max_val = 0
 		size_x = 0
 		
 
@@ -106,6 +106,7 @@ if yt.is_root():
 	plt.plot(Ftime,rhomaxpos)
 	plt.xlabel('Time $[1/m]$')
 	plt.ylabel('Position x axis $[1/m]$')
+	plt.ylim(center-35,center)
 	plt.grid()
 	plt.savefig('max_rho_pos.png')
 	plt.close()
