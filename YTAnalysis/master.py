@@ -28,7 +28,7 @@ alp = 0.6 # alpha
 
 # CHANGE ME
 # Loading dataset (Load from one folder up)
-ds = yt.load('../../outMatterSF_*.3d.hdf5')
+ds = yt.load('../outMatterSF_*.3d.hdf5')
 
 # Define H2
 def _H2(field, data):
