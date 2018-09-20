@@ -64,19 +64,23 @@ for sto, i in ts.piter(storage=storage):
 	rho_max = float(rho.max())
 
 	# Find the coordinate of where the maximum value is
-	x_max = np.where(rho == rho_max)[0][0]
-	x_max_val = x[x_max]
+	if rho_max !=0:
+		x_max = np.where(rho == rho_max)[0][0]
+		x_max_val = x[x_max]
 	
-	 # Create a function that goes to negative when we are below 95% of rho max
-	rhofun = interp1d(x, rho-0.05*rho_max, kind=Quality, fill_value="extrapolate")
+		# Create a function that goes to negative when we are below 95% of rho max
+		rhofun = interp1d(x, rho-0.05*rho_max, kind=Quality, fill_value="extrapolate")
 
-	# Solve the function for where it goes to zero using a best guess past and
-	# before the the max value of x
-	x_1 = fsolve(rhofun,float(x[x_max])-1)[0]
-	x_2 = fsolve(rhofun,float(x[x_max])+1)[0]
+		# Solve the function for where it goes to zero using a best guess past and
+		# before the the max value of x
+		x_1 = fsolve(rhofun,float(x[x_max])-1)[0]
+		x_2 = fsolve(rhofun,float(x[x_max])+1)[0]
 
-	# Size of the 95% rho in center
-	size_x = (x_2-x_1)/2.
+		# Size of the 95% rho in center
+		size_x = (x_2-x_1)/2.
+	else:
+		size_x = 0
+		x_max_val = center
 	
 	# Store the frames information
 	array = [i.current_time,time.time()-L_start,x_max_val,size_x]
