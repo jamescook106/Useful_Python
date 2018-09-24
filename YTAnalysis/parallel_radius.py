@@ -165,6 +165,7 @@ if yt.is_root():
 	speedup =  total_compute/(time.time()-start_time)
 	np.savetxt('time.out',Ftime)
 	np.savetxt('rho_max_pos.out',rhomaxpos)
+	np.savetxt('rho_size_y.out',rhoysize)
 	np.savetxt('rho_size.out',rhosize)
 	np.savetxt('loop_time.out',looptime)
 	np.savetxt('speed_up.out',[speedup])
