@@ -79,13 +79,27 @@ for sto, i in ts.piter(storage=storage):
 
 		# Size of the 95% rho in center
 		size_x = (x_2-x_1)/2.
+
+		# Measure in y plane
+		cy_precise = i.ray((x_max_val,0,center),(x_max_val,total_box_size,center))
+		y_precise = cy_precise["y"]
+		rhoy_precise = cy_precise["rho"]
+		rho_max_precise = float(rhoy_precise.max())
+		y_max_precise = np.where(rhoy_precise == rho_max_precise)[0][0]
+		y_max_val_precise = y_precise[y_max_precise]
+		rhofuny_precise = interp1d(y_precise, rhoy_precise-0.05*rho_max_precise, kind=Quality, fill_value="extrapolate")
+		y_1_precise = fsolve(rhofuny_precise,float(y_precise[y_max_precise])-1)[0]
+		y_2_precise = fsolve(rhofuny_precise,float(y_precise[y_max_precise])+1)[0]
+		size_y = (y_2_precise-y_1_precise)/2.
+		
 	else:
 		x_max_val = 0
 		size_x = 0
+		size_y = 0
 		
 
 	# Store the frames information
-	array = [i.current_time,time.time()-L_start,x_max_val,size_x]
+	array = [i.current_time,time.time()-L_start,x_max_val,size_x, size_y]
 	sto.result = array
 	sto.result_id = str(i)
 
@@ -94,13 +108,16 @@ if yt.is_root():
 	Ftime = []
 	rhomaxpos = []
 	rhosize = []
+	rhoysize = []
+	rho_average = []
 	for L in sorted(storage.items()):
 		looptime.append(float(L[1][1]))
 		Ftime.append(float(L[1][0]))
 		rhomaxpos.append(float(L[1][2]))
 		rhosize.append(float(L[1][3]))
-		#print L[1]
-		
+		rhoysize.append(float(L[1][4]))
+		rho_average.append(0.5*(float(L[1][3])+float(L[1][4])))
+
 	# Max rho pos
 	plt.figure(1)
 	plt.plot(Ftime,rhomaxpos)
@@ -111,13 +128,36 @@ if yt.is_root():
 	plt.savefig('max_rho_pos.png')
 	plt.close()
 	
-	# Star Radius
+	# Star X Radius
 	plt.figure(2)
 	plt.plot(Ftime,rhosize)
 	plt.xlabel('Time $[1/m]$')
 	plt.ylabel('Star Radius $[1/m]$')
 	plt.ylim(0,12)
 	plt.grid()
+	plt.savefig('starx_radius.png')
+	plt.close()
+	
+	# Star Y Radius
+	plt.figure(3)
+	plt.plot(Ftime,rhoysize)
+	plt.xlabel('Time $[1/m]$')
+	plt.ylabel('Star Radius $[1/m]$')
+	plt.ylim(0,12)
+	plt.grid()
+	plt.savefig('stary_radius.png')
+	plt.close()
+	
+	# Star XY Radius
+	plt.figure(3)
+	plt.plot(Ftime,rhosize, label = 'x')
+	plt.plot(Ftime,rhoysize, label = 'y')
+	plt.plot(Ftime,rho_average, label = 'mean')
+	plt.xlabel('Time $[1/m]$')
+	plt.ylabel('Star Radius $[1/m]$')
+	plt.ylim(0,12)
+	plt.grid()
+	plt.legend()
 	plt.savefig('star_radius.png')
 	plt.close()
 	
