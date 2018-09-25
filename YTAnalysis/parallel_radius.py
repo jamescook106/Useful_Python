@@ -178,7 +178,7 @@ if yt.is_root():
 		plt.plot(lineout_x[i],lineout_rho[i], label = str(Ftime[i]))
 		plt.xlim(center-35,center)
 		plt.yscale('log')
-		plt.ylim(max_rho*0.01, max_rho*1.1)
+		plt.ylim(max_rho*0.001, max_rho*1.1)
 		plt.xlabel('x position $[1/m]$')
 		plt.grid()
 		plt.legend()
@@ -191,6 +191,8 @@ if yt.is_root():
 		else:
 			plt.savefig('rhoslice_'+str(i) + '.png')
 		plt.close()
+		np.savetxt('rhoslice_'+str(i) + '.out',lineout_rho[i])
+		np.savetxt('xslice_'+str(i) + '.out',lineout_x[i])
 	
 	total_compute = sum(looptime)
 	speedup =  total_compute/(time.time()-start_time)
