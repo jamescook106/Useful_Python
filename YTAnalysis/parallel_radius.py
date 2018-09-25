@@ -99,7 +99,7 @@ for sto, i in ts.piter(storage=storage):
 		
 
 	# Store the frames information
-	array = [i.current_time,time.time()-L_start,x_max_val,size_x, size_y]
+	array = [i.current_time,time.time()-L_start,x_max_val,size_x, size_y, x, rho]
 	sto.result = array
 	sto.result_id = str(i)
 
@@ -110,6 +110,8 @@ if yt.is_root():
 	rhosize = []
 	rhoysize = []
 	rho_average = []
+	lineout_rho = []
+	lineout_x = []
 	for L in sorted(storage.items()):
 		looptime.append(float(L[1][1]))
 		Ftime.append(float(L[1][0]))
@@ -117,6 +119,8 @@ if yt.is_root():
 		rhosize.append(float(L[1][3]))
 		rhoysize.append(float(L[1][4]))
 		rho_average.append(0.5*(float(L[1][3])+float(L[1][4])))
+		lineout_rho.append(L[1][6])
+		lineout_x.append(L[1][5])
 
 	# Max rho pos
 	plt.figure(1)
@@ -149,7 +153,7 @@ if yt.is_root():
 	plt.close()
 	
 	# Star XY Radius
-	plt.figure(3)
+	plt.figure(4)
 	plt.plot(Ftime,rhosize, label = 'x')
 	plt.plot(Ftime,rhoysize, label = 'y')
 	plt.plot(Ftime,rho_average, label = 'mean')
@@ -160,6 +164,32 @@ if yt.is_root():
 	plt.legend()
 	plt.savefig('star_radius.png')
 	plt.close()
+	
+	max_rho = 0
+	
+	for i in lineout_rho:
+		for j in i:
+			if j>max_rho:
+				max_rho = j
+
+	# Star XY Radius
+	for i in range(0,len(lineout_x)):
+		plt.figure(4+i)
+		plt.plot(lineout_x[i],lineout_rho[i], label = str(Ftime[i]))
+		plt.xlim(center-35,center)
+		plt.ylim(0, max_rho*1.1)
+		plt.xlabel('x position $[1/m]$')
+		plt.grid()
+		plt.legend()
+		if i<10:
+			plt.savefig('rhoslice_000'+str(i) + '.png')
+		elif i>9 and i<100:
+			plt.savefig('rhoslice_00'+str(i) + '.png')
+		elif i>99 and i<1000:
+			plt.savefig('rhoslice_0'+str(i) + '.png')
+		else:
+			plt.savefig('rhoslice_'+str(i) + '.png')
+		plt.close()
 	
 	total_compute = sum(looptime)
 	speedup =  total_compute/(time.time()-start_time)
