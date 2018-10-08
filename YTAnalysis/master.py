@@ -30,6 +30,10 @@ alp = 0.6 # alpha
 # Loading dataset (Load from one folder up)
 ds = yt.load('../outMatterSF_*.3d.hdf5')
 
+# Matplotlib Settings
+rcParams.update({'figure.autolayout': True})
+rcParams['axes.formatter.limits'] = [-3,3]
+
 # Define H2
 def _H2(field, data):
         return data["Ham"]*data["Ham"]

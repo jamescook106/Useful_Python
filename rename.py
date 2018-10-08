@@ -42,31 +42,31 @@ name_counter = 0
 # Rename the png
 while while_counter<Total_Files:
     if name_counter<10:
-        j = Input_Directory + '/outMatterSF_00000' + str(name_counter) + '.3d.hdf5_Slice_z_'+Variable+'.png'
+        j = Input_Directory + '/pltstate00000' + str(name_counter) + '.3d.hdf5_Slice_z_'+Variable+'.png'
         if os.path.isfile(j):
             print j
             shutil.copyfile(j,OutputName(while_counter,Output_Path))
             while_counter+=1
     elif name_counter>9 and name_counter<100:
-        j = Input_Directory + '/outMatterSF_0000' + str(name_counter) + '.3d.hdf5_Slice_z_'+Variable+'.png'
+        j = Input_Directory + '/pltstate0000' + str(name_counter) + '.3d.hdf5_Slice_z_'+Variable+'.png'
         if os.path.isfile(j):
             print j
             shutil.copyfile(j,OutputName(while_counter,Output_Path))
             while_counter+=1
     elif name_counter>99 and name_counter<1000:
-        j = Input_Directory + '/outMatterSF_000' + str(name_counter) + '.3d.hdf5_Slice_z_'+Variable+'.png'
+        j = Input_Directory + '/pltstate000' + str(name_counter) + '.3d.hdf5_Slice_z_'+Variable+'.png'
         if os.path.isfile(j):
             print j
             shutil.copyfile(j,OutputName(while_counter,Output_Path))
             while_counter+=1
     elif name_counter>999 and name_counter<10000:
-        j = Input_Directory + '/outMatterSF_00' + str(name_counter) + '.3d.hdf5_Slice_z_'+Variable+'.png'
+        j = Input_Directory + '/pltstate00' + str(name_counter) + '.3d.hdf5_Slice_z_'+Variable+'.png'
         if os.path.isfile(j):
             print j
             shutil.copyfile(j,OutputName(while_counter,Output_Path))
             while_counter+=1
     elif name_counter>9999 and name_counter<100000:
-        j = Input_Directory + '/outMatterSF_0' + str(name_counter) + '.3d.hdf5_Slice_z_'+Variable+'.png'
+        j = Input_Directory + '/pltstate0' + str(name_counter) + '.3d.hdf5_Slice_z_'+Variable+'.png'
         if os.path.isfile(j):
             print j
             shutil.copyfile(j,OutputName(while_counter,Output_Path))
