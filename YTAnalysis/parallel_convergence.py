@@ -29,6 +29,7 @@ alp = 0.6 # alpha
 # Matplotlib Settings
 rcParams.update({'figure.autolayout': True})
 rcParams['axes.formatter.limits'] = [-3,3]
+rcParams['font.size'] = 12
 
 # CHANGE ME
 # Loading dataset (Load from one folder up)
@@ -52,14 +53,20 @@ med_res_highest = low_res_base/(2**med_layers)
 high_res_highest = low_res_base/(2**high_layers)
 
 # Program Parameters 
+variable = 'rho'
+testing_x_point = 15
+testing_y_point = 3
+testing_z_point = testing_y_point
 center =  (low[0].domain_right_edge/2.)[0]
-adjusted_right = int(center)*2 - 8
-convergence_test_x_point = float(int(center)-8. )
-convergence_test_y_point = float(int(center))
-convergence_test_z_point = float(int(center))
-scheme = 1
+adjusted_right = int(center)*2 - testing_x_point
+convergence_test_x_point = float(int(center)-testing_x_point )
+convergence_test_y_point = float(int(center)-testing_y_point)
+convergence_test_z_point = float(int(center)-testing_z_point)
+scheme = 2
 
-c = [convergence_test_x_point- (med_res_highest/2.),convergence_test_y_point- (med_res_highest/2.),convergence_test_z_point- (med_res_highest/2.)]
+c_layer = med_res_highest
+
+c = [convergence_test_x_point- (c_layer/2.),convergence_test_y_point- (c_layer/2.),convergence_test_z_point- (c_layer/2.)]
 
 # Dimension of interpolation array
 dim = np.array([10,10,10])
@@ -74,7 +81,7 @@ for sto, i in low.piter(storage=storage_low):
 
 	# All Data
 	ptn = i.point(c)
-	rho_basic = float(ptn["rho"][0])
+	rho_basic = float(ptn[variable][0])
 
 	le_x = convergence_test_x_point - 5.*low_res_highest
 	le_yz =  convergence_test_y_point - 5.*low_res_highest
@@ -88,9 +95,9 @@ for sto, i in low.piter(storage=storage_low):
 	y0 = ydata[0]
 	z0 = zdata[0]
 
-	xcoord = (convergence_test_x_point-x0-(med_res_highest/2.))/low_res_highest
-	ycoord = (convergence_test_y_point-y0-(med_res_highest/2.))/low_res_highest
-	zcoord = (convergence_test_z_point-z0-(med_res_highest/2.))/low_res_highest
+	xcoord = (convergence_test_x_point-x0-(c_layer/2.))/low_res_highest
+	ycoord = (convergence_test_y_point-y0-(c_layer/2.))/low_res_highest
+	zcoord = (convergence_test_z_point-z0-(c_layer/2.))/low_res_highest
 
 	#print xdata
 	#print ydata
@@ -100,7 +107,7 @@ for sto, i in low.piter(storage=storage_low):
 	#print ycoord
 	#print xcoord
 
-	data = np.array(low_covering_grid['rho'])
+	data = np.array(low_covering_grid[variable])
 	var_low = ndimage.map_coordinates(data, [[xcoord], [ycoord], [zcoord]], order=scheme)[0]
 
 	array = [i.current_time,rho_basic,var_low]
@@ -112,7 +119,7 @@ for sto, i in low.piter(storage=storage_low):
 for sto, i in medium.piter(storage=storage_medium):
 
 	ptn = i.point(c)
-	rho_basic = float(ptn["rho"][0])
+	rho_basic = float(ptn[variable][0])
 
 	le_x = convergence_test_x_point - 5.*med_res_highest
 	le_yz =  convergence_test_y_point - 5.*med_res_highest
@@ -126,9 +133,9 @@ for sto, i in medium.piter(storage=storage_medium):
 	y0 = ydata[0]
 	z0 = zdata[0]
 
-	xcoord = (convergence_test_x_point-x0-(med_res_highest/2.))/med_res_highest
-	ycoord = (convergence_test_y_point-y0-(med_res_highest/2.))/med_res_highest
-	zcoord = (convergence_test_z_point-z0-(med_res_highest/2.))/med_res_highest
+	xcoord = (convergence_test_x_point-x0-(c_layer/2.))/med_res_highest
+	ycoord = (convergence_test_y_point-y0-(c_layer/2.))/med_res_highest
+	zcoord = (convergence_test_z_point-z0-(c_layer/2.))/med_res_highest
 
 	#print xdata
 	#print ydata
@@ -138,7 +145,7 @@ for sto, i in medium.piter(storage=storage_medium):
 	#print ycoord
 	#print xcoord
 
-	data = np.array(med_covering_grid['rho'])
+	data = np.array(med_covering_grid[variable])
 	var_med = ndimage.map_coordinates(data, [[xcoord], [ycoord], [zcoord]], order=scheme)[0]
 
 	array = [i.current_time,rho_basic,var_med]
@@ -149,7 +156,7 @@ for sto, i in medium.piter(storage=storage_medium):
 for sto, i in high.piter(storage=storage_high):
 
 	ptn = i.point(c)
-	rho_basic = float(ptn["rho"][0])
+	rho_basic = float(ptn[variable][0])
 
 	le_x = convergence_test_x_point - 5.*high_res_highest
 	le_yz =  convergence_test_y_point - 5.*high_res_highest
@@ -163,9 +170,9 @@ for sto, i in high.piter(storage=storage_high):
 	y0 = ydata[0]
 	z0 = zdata[0]
 
-	xcoord = (convergence_test_x_point-x0-(med_res_highest/2.))/high_res_highest
-	ycoord = (convergence_test_y_point-y0-(med_res_highest/2.))/high_res_highest
-	zcoord = (convergence_test_z_point-z0-(med_res_highest/2.))/high_res_highest
+	xcoord = (convergence_test_x_point-x0-(c_layer/2.))/high_res_highest
+	ycoord = (convergence_test_y_point-y0-(c_layer/2.))/high_res_highest
+	zcoord = (convergence_test_z_point-z0-(c_layer/2.))/high_res_highest
 
 	#print xdata
 	#print ydata
@@ -175,7 +182,7 @@ for sto, i in high.piter(storage=storage_high):
 	#print ycoord
 	#print xcoord
 
-	data = np.array(high_covering_grid['rho'])
+	data = np.array(high_covering_grid[variable])
 	var_med = ndimage.map_coordinates(data, [[xcoord], [ycoord], [zcoord]], order=scheme)[0]
 
 	array = [i.current_time,rho_basic,var_med]
@@ -231,42 +238,44 @@ if yt.is_root():
 
 	# rho_basic
 	plt.figure(1)
-	plt.plot(timedata_low,low_rho_basic,label='Basic Low')
-	plt.plot(timedata_med,med_rho_basic,label='Basic Medium')
-	plt.plot(timedata_high,high_rho_basic,label='Basic High')
+	plt.plot(timedata_low,low_rho_basic,label='Basic Low',linestyle=':',)
+	plt.plot(timedata_med,med_rho_basic,label='Basic Medium',linewidth=2)
+	plt.plot(timedata_high,high_rho_basic,label='Basic High',linestyle='--',linewidth=3)
 	plt.xlabel('Time $[1/m]$')
-	#plt.xlim(0,220)
+	plt.ylabel('$\\rho \\, [m^2 M_{pl}^2]$')
+	plt.xlim(0,820)
 	#plt.ylim(0,0.000001)
 	plt.grid()
 	plt.legend()
-	plt.savefig('rho_basic.png')
+	plt.savefig(variable + '_basic.png',bbox_inches='tight')
 	plt.close()
 
 	# rho_ndimage
 	plt.figure(2)
-	plt.plot(timedata_low,low_rho_ndimage,label='ndimage Low')
-	plt.plot(timedata_med,med_rho_ndimage,label='ndimage Medium')
-	plt.plot(timedata_high,high_rho_ndimage,label='ndimage High')
+	plt.plot(timedata_low,low_rho_ndimage,label='Low',linestyle=':')
+	plt.plot(timedata_med,med_rho_ndimage,label='Medium',linewidth=2)
+	plt.plot(timedata_high,high_rho_ndimage,label='High',linestyle='--',linewidth=3)
 	plt.xlabel('Time $[1/m]$')
-	#plt.xlim(0,200)
+	plt.xlim(0,820)
 	#plt.ylim(0,0.000001)
+	plt.ylabel('$\\rho \\, [m^2 M_{pl}^2]$')
 	plt.grid()
 	plt.legend()
-	plt.savefig('rho_ndimage_'+str(scheme)+'.png')
+	plt.savefig(variable+'_ndimage_'+str(scheme)+'.png',bbox_inches='tight')
 	plt.close()
 	
 	# Convergence
-	plt.figure(2)
+	plt.figure(3)
 	plt.plot(convergence_time,convergence)
 	plt.xlabel('Time $[1/m]$')
 	plt.ylim(0,4.3)
 	plt.grid()
 	#plt.legend()
-	plt.savefig('convergence_'+str(scheme)+'.png')
+	plt.savefig('convergence_'+str(scheme)+'.png',bbox_inches='tight')
 	plt.close()
 	
 	# Convergence
-	plt.figure(2)
+	plt.figure(4)
 	plt.plot(convergence_time,convergence)
 	plt.plot(convergence_time,convergence_mean,color='orange')
 	plt.plot(convergence_time,convergence_plus,linestyle='--',alpha=0.5,color='orange')
@@ -275,7 +284,7 @@ if yt.is_root():
 	plt.ylim(0,4.3)
 	plt.grid()
 	#plt.legend()
-	plt.savefig('convergence_'+str(scheme)+'_average.png')
+	plt.savefig('convergence_'+str(scheme)+'_average.png',bbox_inches='tight')
 	plt.close()
 
 #np.savetxt('time.out',timedata)_low
