@@ -1,7 +1,6 @@
 # parallel_L.py
 # James Widdicombe
-# Last Updated 17/08/2018
-# Last Formatted Dec 2019
+# Last Updated 16/12/2019
 # Calculate L2M and L2H
 
 # Load the modules
@@ -37,7 +36,8 @@ ts = yt.load(data_location)
 
 # Program Parameters
 center = ts[0].domain_right_edge / 2.0
-adjusted_right = int(center[0]) * 2 - 8
+adjusted_left = 8
+adjusted_right = int(center[0]) * 2 - adjusted_left
 
 # Define an empty storage dictionary for collecting information
 # in parallel through processing
@@ -60,7 +60,11 @@ def _M2(field, data):
 for sto, i in ts.piter(storage=storage):
 
     # All Data
-    ad = i.r[8:adjusted_right, 8:adjusted_right, 8:adjusted_right]
+    ad = i.r[
+        adjusted_left:adjusted_right,
+        adjusted_left:adjusted_right,
+        adjusted_left:adjusted_right,
+    ]
 
     # Add the M2 and L2 Fields
     i.add_field("H2", _H2, units="")
@@ -93,7 +97,7 @@ if yt.is_root():
     plt.ylabel("$\\mathcal{H}$")
     plt.xlabel("Time $[1/m]$")
     plt.grid()
-    plt.savefig("H.png")
+    plt.savefig("L2H.png")
     plt.close()
 
     # L2M
@@ -102,7 +106,7 @@ if yt.is_root():
     plt.ylabel("$\\mathcal{M}$")
     plt.xlabel("Time $[1/m]$")
     plt.grid()
-    plt.savefig("M.png")
+    plt.savefig("L2M.png")
     plt.close()
 
     np.savetxt("time.out", timedata)

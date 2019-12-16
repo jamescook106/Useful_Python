@@ -1,8 +1,7 @@
 # parallel_psi.py
 # James Widdicombe
-# Last Updated 17/10/2018
-# Last Formatted Dec 2019
-# Calculate psi evolution
+# Last Updated 16/12/2019
+# Calculate phi evolution
 
 # Load the modules
 import yt
@@ -37,8 +36,8 @@ ts = yt.load(data_location)
 
 # Program Parameters
 center = ts[0].domain_right_edge / 2.0
-cutoff = 60
-adjusted_right = int(center[0]) * 2 - cutoff
+adjusted_left = 60
+adjusted_right = int(center[0]) * 2 - adjusted_left
 
 # Define an empty storage dictionary for collecting information
 # in parallel through processing
@@ -47,31 +46,32 @@ storage = {}
 for sto, i in ts.piter(storage=storage):
 
     # All Data
-    ad = i.r[cutoff:adjusted_right, cutoff:adjusted_right, cutoff:adjusted_right]
+    ad = i.r[
+        adjusted_left:adjusted_right,
+        adjusted_left:adjusted_right,
+        adjusted_left:adjusted_right,
+    ]
 
-    # L2H
-    maxpsi = ad.max("phi")
+    maxphi = ad.max("phi")
+    minphi = ad.min("phi")
 
-    # L2M
-    minpsi = ad.min("phi")
-
-    array = [i.current_time, maxpsi, minpsi]
+    array = [i.current_time, maxphi, minphi]
 
     sto.result = array
     sto.result_id = str(i)
 if yt.is_root():
     timedata = []
-    maxpsidata = []
-    minpsidata = []
+    maxphidata = []
+    minphidata = []
 
     for L in sorted(storage.items()):
         timedata.append(L[1][0])
-        maxpsidata.append(L[1][1])
-        minpsidata.append(L[1][2])
+        maxphidata.append(L[1][1])
+        minphidata.append(L[1][2])
     # L2H
     plt.figure(1)
-    plt.plot(timedata, maxpsidata)
-    plt.plot(timedata, minpsidata)
+    plt.plot(timedata, maxphidata)
+    plt.plot(timedata, minphidata)
     plt.ylabel("$\\phi$ $[M_{pl}]$")
     plt.xlabel("Time $[1/m]$")
     plt.grid()
@@ -79,5 +79,5 @@ if yt.is_root():
     plt.close()
 
     np.savetxt("time.out", timedata)
-    np.savetxt("maxpsi.out", maxpsidata)
-    np.savetxt("minpsi.out", minpsidata)
+    np.savetxt("maxphi.out", maxphidata)
+    np.savetxt("minphi.out", minphidata)

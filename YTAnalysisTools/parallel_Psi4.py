@@ -1,8 +1,6 @@
-# Psi4.py
+# parallel_Psi4.py
 # James Widdicombe
-# Modified from a code written by Thomas Helfer
-# Last Updated 14/08/2018
-# Last Formatted Dec 2019
+# Last Updated 16/12/2019
 # Decomposition of Psi4 into spin weighted spherical harmonics
 # l = 2,3,4
 
@@ -11,55 +9,39 @@ import yt
 import numpy as np
 from numpy import pi
 import time
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+from matplotlib import rcParams
+
+start_time = time.time()
+
+# Matplotlib Settings
+rcParams.update({"figure.autolayout": True})
+rcParams["axes.formatter.limits"] = [-3, 3]
 
 # Enable YT Parallelism
 yt.enable_parallelism()
 
 # Script Parameters
-extraction_radius = 120  # radius of extraction
+extraction_radius = 60  # radius of extraction
 data_location = "../outMatterSF_*.3d.hdf5"  # Data file location
 
 # Loading dataset
-ds = yt.load(data_location)
+ts = yt.load(data_location)
 
-# Initialize Output arrays
-# l = 2
-Weyl4_l2_m0_data = []
-# positive m
-Weyl4_l2_m1_data = []
-Weyl4_l2_m2_data = []
-# negative m
-Weyl4_l2_m1n_data = []
-Weyl4_l2_m2n_data = []
-# l = 3
-Weyl4_l3_m0_data = []
-# positive m
-Weyl4_l3_m1_data = []
-Weyl4_l3_m2_data = []
-Weyl4_l3_m3_data = []
-# negative m
-Weyl4_l3_m1n_data = []
-Weyl4_l3_m2n_data = []
-Weyl4_l3_m3n_data = []
-# l = 4
-Weyl4_l4_m0_data = []
-# positive m
-Weyl4_l4_m1_data = []
-Weyl4_l4_m2_data = []
-Weyl4_l4_m3_data = []
-Weyl4_l4_m4_data = []
-# negative m
-Weyl4_l4_m1n_data = []
-Weyl4_l4_m2n_data = []
-Weyl4_l4_m3n_data = []
-Weyl4_l4_m4n_data = []
+# Define Deltat for power output
+time0 = ts[0].current_time
+time1 = ts[1].current_time
+DeltaT = float(time1 - time0)
+
+# Define an empty storage dictionary for collecting information
+# in parallel through processing
+storage = {}
 
 # Program Parameters
-center = ds[0].domain_right_edge / 2.0
-
-# Initialize Arrays
-timedata = []
-program_runtime_data = []
+center = ts[0].domain_right_edge / 2.0
 
 # Definitions for Quadrature scheme
 N = 131
@@ -230,13 +212,10 @@ sY_l4_m4n = (
     * np.sin(theta) ** 2
 )
 
-# ==============================
-#         Loop over all frames
-# ==============================
-for i in ds:
-
+# Iterate through dataset
+for sto, i in ts.piter(storage=storage):
     # Timings
-    i_start = time.time()
+    L_start = time.time()
 
     # Initalising
     Sr = 0 + 1j * 0
@@ -274,6 +253,8 @@ for i in ds:
     Weyl4_l4_m3n = 0 + 1j * 0
     Weyl4_l4_m4n = 0 + 1j * 0
 
+    Weyl4data = []
+
     # k is a counter
     for k in range(phi_length):
 
@@ -287,6 +268,8 @@ for i in ds:
         ReWeyl = float(ptn["ReWeyl4"][0])
         ImWeyl = float(ptn["ImWeyl4"][0])
         Weyl4 = ReWeyl + 1j * ImWeyl
+
+        Weyl4data.append(Weyl4)
 
         Weyl4_l2_m0 += (
             4 * pi * w[k] * np.conjugate(sY_l2_m0[k]) * Weyl4 * extraction_radius
@@ -359,51 +342,159 @@ for i in ds:
         Weyl4_l4_m4n += (
             4 * pi * w[k] * np.conjugate(sY_l4_m4n[k]) * Weyl4 * extraction_radius
         )
-    # Data Writeout
-    # l = 2
-    Weyl4_l2_m0_data.append(Weyl4_l2_m0)
-    # positive m
-    Weyl4_l2_m1_data.append(Weyl4_l2_m1)
-    Weyl4_l2_m2_data.append(Weyl4_l2_m2)
-    # negative m
-    Weyl4_l2_m1n_data.append(Weyl4_l2_m1n)
-    Weyl4_l2_m2n_data.append(Weyl4_l2_m2n)
+    array = [
+        i.current_time,
+        Weyl4_l2_m0,
+        Weyl4_l2_m1,
+        Weyl4_l2_m2,
+        Weyl4_l2_m1n,
+        Weyl4_l2_m2n,
+        Weyl4_l3_m0,
+        Weyl4_l3_m1,
+        Weyl4_l3_m2,
+        Weyl4_l3_m3,
+        Weyl4_l3_m1n,
+        Weyl4_l3_m2n,
+        Weyl4_l3_m3n,
+        Weyl4_l4_m0,
+        Weyl4_l4_m1,
+        Weyl4_l4_m2,
+        Weyl4_l4_m3,
+        Weyl4_l4_m4,
+        Weyl4_l4_m1n,
+        Weyl4_l4_m2n,
+        Weyl4_l4_m3n,
+        Weyl4_l4_m4n,
+        time.time() - L_start,
+        Weyl4data,
+    ]
+    sto.result = array
+    sto.result_id = str(i)
+if yt.is_root():
 
+    # Initialize Output arrays
+    # l = 2
+    Weyl4_l2_m0_data = []
+    # positive m
+    Weyl4_l2_m1_data = []
+    Weyl4_l2_m2_data = []
+    # negative m
+    Weyl4_l2_m1n_data = []
+    Weyl4_l2_m2n_data = []
     # l = 3
-    Weyl4_l3_m0_data.append(Weyl4_l3_m0)
+    Weyl4_l3_m0_data = []
     # positive m
-    Weyl4_l3_m1_data.append(Weyl4_l3_m1)
-    Weyl4_l3_m2_data.append(Weyl4_l3_m2)
-    Weyl4_l3_m3_data.append(Weyl4_l3_m3)
+    Weyl4_l3_m1_data = []
+    Weyl4_l3_m2_data = []
+    Weyl4_l3_m3_data = []
     # negative m
-    Weyl4_l3_m1n_data.append(Weyl4_l3_m1n)
-    Weyl4_l3_m2n_data.append(Weyl4_l3_m2n)
-    Weyl4_l3_m3n_data.append(Weyl4_l3_m3n)
-
+    Weyl4_l3_m1n_data = []
+    Weyl4_l3_m2n_data = []
+    Weyl4_l3_m3n_data = []
     # l = 4
-    Weyl4_l4_m0_data.append(Weyl4_l4_m0)
+    Weyl4_l4_m0_data = []
     # positive m
-    Weyl4_l4_m1_data.append(Weyl4_l4_m1)
-    Weyl4_l4_m2_data.append(Weyl4_l4_m2)
-    Weyl4_l4_m3_data.append(Weyl4_l4_m3)
-    Weyl4_l4_m4_data.append(Weyl4_l4_m4)
+    Weyl4_l4_m1_data = []
+    Weyl4_l4_m2_data = []
+    Weyl4_l4_m3_data = []
+    Weyl4_l4_m4_data = []
     # negative m
-    Weyl4_l4_m1n_data.append(Weyl4_l4_m1n)
-    Weyl4_l4_m2n_data.append(Weyl4_l4_m2n)
-    Weyl4_l4_m3n_data.append(Weyl4_l4_m3n)
-    Weyl4_l4_m4n_data.append(Weyl4_l4_m4n)
+    Weyl4_l4_m1n_data = []
+    Weyl4_l4_m2n_data = []
+    Weyl4_l4_m3n_data = []
+    Weyl4_l4_m4n_data = []
 
-    # time
-    timedata.append(i.current_time)
+    timedata = []
 
+    # Diagnostics
+    loop_times = []
+
+    Weyl4_all_time = []
+
+    # Swap from storage into arrays
+    for L in sorted(storage.items()):
+        timedata.append(L[1][0])
+
+        Weyl4_l2_m0_data.append(L[1][1])
+        # positive m
+        Weyl4_l2_m1_data.append(L[1][2])
+        Weyl4_l2_m2_data.append(L[1][3])
+        # negative m
+        Weyl4_l2_m1n_data.append(L[1][4])
+        Weyl4_l2_m2n_data.append(L[1][5])
+        # l = 3
+        Weyl4_l3_m0_data.append(L[1][6])
+        # positive m
+        Weyl4_l3_m1_data.append(L[1][7])
+        Weyl4_l3_m2_data.append(L[1][8])
+        Weyl4_l3_m3_data.append(L[1][9])
+        # negative m
+        Weyl4_l3_m1n_data.append(L[1][10])
+        Weyl4_l3_m2n_data.append(L[1][11])
+        Weyl4_l3_m3n_data.append(L[1][12])
+        # l = 4
+        Weyl4_l4_m0_data.append(L[1][13])
+        # positive m
+        Weyl4_l4_m1_data.append(L[1][14])
+        Weyl4_l4_m2_data.append(L[1][15])
+        Weyl4_l4_m3_data.append(L[1][16])
+        Weyl4_l4_m4_data.append(L[1][17])
+        # negative m
+        Weyl4_l4_m1n_data.append(L[1][18])
+        Weyl4_l4_m2n_data.append(L[1][19])
+        Weyl4_l4_m3n_data.append(L[1][20])
+        Weyl4_l4_m4n_data.append(L[1][21])
+
+        loop_times.append(L[1][22])
+
+        # Contains all values of Weyl4 for the hole time evolution
+        Weyl4_all_time.append(L[1][23])
+    # Power calculation
+    Int = np.zeros(len(coord), dtype="complex128")
+    Spher_data = []
+    Energy_data = []
+    Energy = 0
+    for i in range(len(Weyl4_all_time)):
+        Spher = 0
+        for k in range(phi_length):
+            Int[k] += Weyl4_all_time[i][k] * DeltaT
+            Spher += 4 * pi * w[k] * np.absolute(Int[k]) ** 2
+        Spher = Spher * (extraction_radius) ** 2 / (16 * np.pi)
+        Spher_data.append(Spher)
+        Energy += Spher * DeltaT
+        Energy_data.append(Energy)
+    All_data = []
+    All_data.append(Weyl4_l2_m0_data)
+    All_data.append(Weyl4_l2_m1_data)
+    All_data.append(Weyl4_l2_m2_data)
+    All_data.append(Weyl4_l2_m1n_data)
+    All_data.append(Weyl4_l2_m2n_data)
+    All_data.append(Weyl4_l3_m0_data)
+    All_data.append(Weyl4_l3_m1_data)
+    All_data.append(Weyl4_l3_m2_data)
+    All_data.append(Weyl4_l3_m3_data)
+    All_data.append(Weyl4_l3_m1n_data)
+    All_data.append(Weyl4_l3_m2n_data)
+    All_data.append(Weyl4_l3_m3n_data)
+    All_data.append(Weyl4_l4_m0_data)
+    All_data.append(Weyl4_l4_m1_data)
+    All_data.append(Weyl4_l4_m2_data)
+    All_data.append(Weyl4_l4_m3_data)
+    All_data.append(Weyl4_l4_m4_data)
+    All_data.append(Weyl4_l4_m1n_data)
+    All_data.append(Weyl4_l4_m2n_data)
+    All_data.append(Weyl4_l4_m3n_data)
+    All_data.append(Weyl4_l4_m4n_data)
+
+    # Output Data
     np.savetxt("time.out", timedata)
-    # l = 2
+    np.savetxt("loop_times.out", loop_times)
+    np.savetxt("speed_up.out", [sum(loop_times) / (time.time() - start_time)])
     np.savetxt("Weyl4_l2_m0_data.out", Weyl4_l2_m0_data)
     np.savetxt("Weyl4_l2_m1_data.out", Weyl4_l2_m1_data)
     np.savetxt("Weyl4_l2_m2_data.out", Weyl4_l2_m2_data)
     np.savetxt("Weyl4_l2_m1n_data.out", Weyl4_l2_m1n_data)
     np.savetxt("Weyl4_l2_m2n_data.out", Weyl4_l2_m2n_data)
-    # l = 3
     np.savetxt("Weyl4_l3_m0_data.out", Weyl4_l3_m0_data)
     np.savetxt("Weyl4_l3_m1_data.out", Weyl4_l3_m1_data)
     np.savetxt("Weyl4_l3_m2_data.out", Weyl4_l3_m2_data)
@@ -411,7 +502,6 @@ for i in ds:
     np.savetxt("Weyl4_l3_m1n_data.out", Weyl4_l3_m1n_data)
     np.savetxt("Weyl4_l3_m2n_data.out", Weyl4_l3_m2n_data)
     np.savetxt("Weyl4_l3_m3n_data.out", Weyl4_l3_m3n_data)
-    # l = 4
     np.savetxt("Weyl4_l4_m0_data.out", Weyl4_l4_m0_data)
     np.savetxt("Weyl4_l4_m1_data.out", Weyl4_l4_m1_data)
     np.savetxt("Weyl4_l4_m2_data.out", Weyl4_l4_m2_data)
@@ -421,6 +511,77 @@ for i in ds:
     np.savetxt("Weyl4_l4_m2n_data.out", Weyl4_l4_m2n_data)
     np.savetxt("Weyl4_l4_m3n_data.out", Weyl4_l4_m3n_data)
     np.savetxt("Weyl4_l4_m4n_data.out", Weyl4_l4_m4n_data)
+    np.savetxt("Spher_data.out", Spher_data)
+    np.savetxt("Energy_data.out", Energy_data)
 
-    program_runtime_data.append(time.time() - i_start)
-    np.savetxt("run_time.out", program_runtime_data)
+    # Integrated Plotting
+    labels = [
+        "l=2m=0",
+        "l=2m=1",
+        "l=2m=2",
+        "l=2m=-1",
+        "l=2m=-2",
+        "l=3m=0",
+        "l=3m=1",
+        "l=3m=2",
+        "l=3m=3",
+        "l=3m=-1",
+        "l=3m=-2",
+        "l=3m=-3",
+        "l=4m=0",
+        "l=4m=1",
+        "l=4m=2",
+        "l=4m=3",
+        "l=4m=4",
+        "l=4m=-1",
+        "l=4m=-2",
+        "l=4m=-3",
+        "l=4m=-4",
+    ]
+
+    # Calculate Retarded Time
+    time_retarded = []
+    for i in timedata:
+        time_retarded.append(float(i) - extraction_radius)
+    np.savetxt("timeretarded.out", time_retarded)
+
+    # Individual Modes
+    for i in range(0, len(labels)):
+        plt.figure(i)
+        plt.plot(time_retarded, np.real(All_data[i]))
+        plt.xlabel(r"$t_{ret}~[1/m]$")
+        plt.ylabel(r"$r\Psi_4$")
+        plt.grid()
+        plt.savefig(labels[i] + ".png", bbox_inches="tight")
+        plt.close()
+    # All Modes
+    plt.figure(len(labels), figsize=(10, 6))
+    ax = plt.subplot(111)
+    for i in range(0, len(labels)):
+        ax.plot(time_retarded, np.real(All_data[i]), label=labels[i])
+    box = ax.get_position()
+    ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+    plt.xlabel(r"$t_{ret}~[1/m_{a}]$")
+    plt.ylabel(r"$r\Psi_4$")
+    plt.grid()
+    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.0)
+    plt.savefig("All.png", bbox_inches="tight")
+    plt.close()
+
+    # Power
+    plt.figure(len(labels) + 1, figsize=(10, 6))
+    plt.plot(time_retarded, np.real(Spher_data))
+    plt.xlabel(r"$t_{ret}~[1/m]$")
+    plt.ylabel(r"$P \, [M_{pl}^2]$")
+    plt.grid()
+    plt.savefig("power.png", bbox_inches="tight")
+    plt.close()
+
+    # Energy
+    plt.figure(len(labels) + 2, figsize=(10, 6))
+    plt.plot(time_retarded, np.real(Energy_data))
+    plt.xlabel(r"$t_{ret}~[1/m]$")
+    plt.ylabel(r"$E \, [M_{pl}^2/m]$")
+    plt.grid()
+    plt.savefig("energy.png", bbox_inches="tight")
+    plt.close()
